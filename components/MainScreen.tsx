@@ -29,7 +29,6 @@ const MainScreen = () => {
         </button>
       </div>
 
-      {/* Background Elements */}
       <motion.div
         className="absolute w-full h-full top-0 left-0 z-0 overflow-hidden"
         initial={{ opacity: 0 }}
@@ -41,7 +40,6 @@ const MainScreen = () => {
         <div className="absolute w-32 h-32 sm:w-40 sm:h-40 bg-red-light dark:bg-red-dark opacity-25 rounded-full bottom-32 left-32 animate-pulse"></div>
       </motion.div>
 
-      {/* Main Content */}
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -55,7 +53,6 @@ const MainScreen = () => {
           The Future of Presentation Creation with AI Power
         </p>
 
-        {/* Icons and Features */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -88,7 +85,6 @@ const MainScreen = () => {
           </div>
         </motion.div>
 
-        {/* Try it Button */}
         <motion.button
           onClick={handleTryIt}
           whileHover={{ scale: 1.1 }}
