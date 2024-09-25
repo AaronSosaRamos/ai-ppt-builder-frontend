@@ -6,15 +6,15 @@ import { GiLightBulb, GiMagicGate, GiBookmarklet, GiPaintBrush } from 'react-ico
 
 const SlideItem = ({ title, content }: { title: string; content: string }) => {
   const icons = [
-    <AiOutlineFileText className="text-blue-500 text-4xl" />,
-    <GiLightBulb className="text-yellow-400 text-4xl" />,
-    <MdOutlineInsertComment className="text-purple-500 text-4xl" />,
-    <AiOutlineRocket className="text-green-800 text-4xl" />,
-    <GiMagicGate className="text-pink-500 text-4xl" />,
-    <AiFillStar className="text-orange-500 text-4xl" />,
-    <GiBookmarklet className="text-red-500 text-4xl" />,
-    <GiPaintBrush className="text-indigo-500 text-4xl" />,
-    <MdOutlineTipsAndUpdates className="text-green-800 text-4xl" />,
+    { icon: <AiOutlineFileText className="text-blue-500 text-4xl" />, key: 'file-text' },
+    { icon: <GiLightBulb className="text-yellow-400 text-4xl" />, key: 'light-bulb' },
+    { icon: <MdOutlineInsertComment className="text-purple-500 text-4xl" />, key: 'comment' },
+    { icon: <AiOutlineRocket className="text-green-800 text-4xl" />, key: 'rocket' },
+    { icon: <GiMagicGate className="text-pink-500 text-4xl" />, key: 'magic-gate' },
+    { icon: <AiFillStar className="text-orange-500 text-4xl" />, key: 'star' },
+    { icon: <GiBookmarklet className="text-red-500 text-4xl" />, key: 'bookmarklet' },
+    { icon: <GiPaintBrush className="text-indigo-500 text-4xl" />, key: 'paint-brush' },
+    { icon: <MdOutlineTipsAndUpdates className="text-green-800 text-4xl" />, key: 'tips' },
   ];
 
   const randomIcon = icons[Math.floor(Math.random() * icons.length)];
@@ -30,7 +30,7 @@ const SlideItem = ({ title, content }: { title: string; content: string }) => {
         <h2 className="text-2xl font-bold text-gray-900 text-white flex-grow">
           {title}
         </h2>
-        <div className="ml-4">{randomIcon}</div>
+        <div className="ml-4" key={randomIcon.key}>{randomIcon.icon}</div>
       </div>
       <p className="text-white dark:text-gray-300 text-lg leading-relaxed">
         {content}
