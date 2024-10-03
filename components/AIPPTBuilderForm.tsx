@@ -10,11 +10,7 @@ import { Suspense, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import * as z from 'zod';
 import { GiRobotGolem } from 'react-icons/gi';
-import dynamic from 'next/dynamic';
-
-const LazyResults = dynamic(() => import('./ResultsComponent'), {
-    suspense: true,
-});
+import Presentation from '@/components/Presentation'
 
 const Spinner = () => (
     <div className="flex items-center justify-center h-full">
@@ -311,7 +307,7 @@ const AIPPTBuilderForm = () => {
 
             {!loading && showResults && (
                 <Suspense fallback={<Spinner />}>
-                    <LazyResults data={presentationData} />
+                    <Presentation {...presentationData} />
                 </Suspense>
             )}
 
