@@ -10,61 +10,14 @@ import { Suspense, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import * as z from 'zod';
 import { GiRobotGolem } from 'react-icons/gi';
-import Presentation from '@/components/Presentation'
+import Presentation from '@/components/Presentation';
+import axiosInstance from '@/lib/axiosInstance';
 
 const Spinner = () => (
     <div className="flex items-center justify-center h-full">
         <AiOutlineCloudUpload className="animate-spin text-6xl text-red-500" />
     </div>
 );
-
-const presentationData = {
-    title: 'Introducción a Python',
-    description: 'Una presentación básica sobre programación en Python para principiantes.',
-    slides: [
-      {
-        title: 'Introducción',
-        content: 'Python es un lenguaje de programación ampliamente utilizado, especialmente en el ámbito científico. Es conocido por su legibilidad y sintaxis sencilla, lo que lo hace ideal para principiantes.\n\nEn esta presentación, cubriremos los conceptos básicos de Python, incluyendo variables, tipos de datos, estructuras de control y más.'
-      },
-      {
-        title: 'Variables',
-        content: 'Las variables son como contenedores para almacenar datos en Python. Puedes pensar en ellas como etiquetas que se asignan a diferentes valores.\n\nEjemplo:\n\n```python\nmensaje = "¡Hola, mundo!" \n```\n\nEn este ejemplo, \'mensaje\' es la variable y "¡Hola, mundo!" es el valor asignado a la variable.'
-      },
-      {
-        title: 'Tipos de Datos',
-        content: 'Python tiene varios tipos de datos incorporados, incluyendo:\n\n* Enteros (int): Números enteros como 10, 25, -5.\n* Flotantes (float): Números con decimales como 3.14, 2.7, -1.0.\n* Cadenas (str): Secuencias de caracteres como "Hola", "Python", "programación".\n* Booleanos (bool): Valores de verdad, True o False.'
-      },
-      {
-        title: 'Control de Flujo',
-        content: 'El control de flujo determina el orden en que se ejecutan las instrucciones en un programa. Las estructuras de control comunes incluyen:\n\n* Condicionales (if, elif, else): Permiten ejecutar diferentes bloques de código según una condición.\n* Bucles (for, while): Permiten repetir un bloque de código varias veces.'
-      },
-      {
-        title: 'Funciones',
-        content: 'Las funciones son bloques de código reutilizables que realizan una tarea específica. Puedes definir tus propias funciones o usar funciones predefinidas de Python.\n\nEjemplo:\n\n```python\ndef saludar(nombre):\n  print(f"¡Hola, {nombre}!")\n\nsaludar("Juan")\n```\n\nEsta función \'saludar\' toma un nombre como argumento e imprime un saludo personalizado.'
-      },
-      {
-        title: 'Módulos',
-        content: "Los módulos son archivos de Python que contienen funciones, clases y variables predefinidas que puedes reutilizar en tus propios programas.\n\nPara usar un módulo, primero debes importarlo:\n\n```python\nimport math\n\nprint(math.pi)\n```\n\nEste código importa el módulo 'math' y luego usa la constante 'pi' definida en ese módulo."
-      },
-      {
-        title: 'Entrada/Salida de Archivos (File I/O)',
-        content: 'Python te permite leer y escribir datos en archivos. Esto es útil para almacenar información de forma permanente o para procesar grandes conjuntos de datos.\n\nEjemplo:\n\n```python\nwith open("mi_archivo.txt", "w") as archivo:\n  archivo.write("¡Hola desde Python!")\n```\n\nEste código abre el archivo \'mi_archivo.txt\' en modo de escritura (\'w\') y escribe una línea de texto en él.'
-      },
-      {
-        title: 'Manejo de Errores',
-        content: 'El manejo de errores te permite prevenir que tu programa se detenga inesperadamente debido a errores. Puedes usar bloques try-except para capturar y manejar excepciones.\n\nEjemplo:\n\n```python\ntry:\n  resultado = 10 / 0\nexcept ZeroDivisionError:\n  print("Error: No puedes dividir entre cero.")\n```\n\nEste código intenta dividir 10 entre 0, lo que genera una excepción \'ZeroDivisionError\'. El bloque \'except\' captura la excepción e imprime un mensaje de error.'
-      },
-      {
-        title: 'Clases',
-        content: 'Las clases son plantillas para crear objetos, que son instancias de una clase. Las clases pueden tener atributos (datos) y métodos (funciones) que definen su comportamiento.\n\nEjemplo:\n\n```python\nclass Perro:\n  def __init__(self, nombre):\n    self.nombre = nombre\n\n  def ladrar(self):\n    print("¡Woof!")\n\nmi_perro = Perro("Fido")\nprint(mi_perro.nombre)\nmi_perro.ladrar()\n```\n\nEste código define una clase \'Perro\' con un atributo \'nombre\' y un método \'ladrar\'. Luego crea un objeto \'mi_perro\' de la clase \'Perro\'.'
-      },
-      {
-        title: 'Conclusión',
-        content: 'Esta presentación ha cubierto los conceptos básicos de Python, pero es solo el comienzo. Python es un lenguaje poderoso y versátil con una gran comunidad y muchos recursos disponibles para aprender más. ¡Sigue practicando y explorando para convertirte en un experto en Python!'
-      }
-    ]
-  };
-  
 
 const formSchema = z.object({
     topic: z.string().min(1, 'Topic is required'),
@@ -82,6 +35,7 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 const AIPPTBuilderForm = () => {
+    const [results, setResults] = useState<any>(null);
     const [darkMode, setDarkMode] = useState(false);
     const [showResults, setShowResults] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -100,14 +54,35 @@ const AIPPTBuilderForm = () => {
         resolver: zodResolver(formSchema),
     });
 
-     const onSubmit: SubmitHandler<FormData> = async (data) => {
-        toast.success('Form submitted successfully! ✅');
-        setLoading(true); 
+    const onSubmit: SubmitHandler<FormData> = async (data) => {
+        setShowResults(false);
+        setResults(null);
+        setLoading(true);
 
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        const formData = {
+            request_args: {
+                topic: data.topic,
+                objective: data.objective,
+                target_audience: data.target_audience,
+                n_slides: data.n_slides,
+                slide_breakdown: data.slide_breakdown,
+                lang: data.lang
+            },
+            file_url: data.file_url,
+            file_type: data.file_type
+        }
 
-        setShowResults(true); 
-        setLoading(false);
+        try {
+            const response = await axiosInstance.post('/generate-ppt', formData);
+
+            toast.success('PPT generated successfully! ✅');
+            setResults(response.data);
+            setShowResults(true); 
+        } catch (error) {
+            toast.error('Error occurred while generating the PPT.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const onError = () => {
@@ -286,7 +261,6 @@ const AIPPTBuilderForm = () => {
                     </div>
                     {errors.file_type && <p className="text-red-500 mt-2">{errors.file_type.message}</p>}
                 </div>
-
                 <motion.button
                     type="submit"
                     className={`w-full bg-red-500 text-white py-3 rounded-lg font-bold transition-colors duration-300 ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-600'}`}
@@ -299,18 +273,13 @@ const AIPPTBuilderForm = () => {
 
             <ToastContainer position="top-right" autoClose={3000} />
 
-            {
-                loading && (
-                    <Spinner />
-                )
-            }
+            {loading && <Spinner />}
 
-            {!loading && showResults && (
+            {!loading && showResults && results && (
                 <Suspense fallback={<Spinner />}>
-                    <Presentation {...presentationData} />
+                    <Presentation {...results} />
                 </Suspense>
             )}
-
         </div>
     );
 };

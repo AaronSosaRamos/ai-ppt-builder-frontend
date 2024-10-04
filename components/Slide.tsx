@@ -3,6 +3,10 @@ import { Transition } from '@headlessui/react';
 import { motion } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClipboard, faCheck, faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeHighlight from 'rehype-highlight';
+import 'highlight.js/styles/github.css'; // Choose any style you like for syntax highlighting
 
 interface SlideProps {
   slide: {
@@ -23,7 +27,7 @@ const Slide: React.FC<SlideProps> = ({ slide, currentIndex, totalSlides, goToNex
       const copyText = `Title: ${slide.title}\n\n${slide.content}`;
       await navigator.clipboard.writeText(copyText);
       setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
+      setTimeout(() => setIsCopied(false), 2000); // Reset after 2 seconds
     } catch (error) {
       console.error('Failed to copy:', error);
     }
@@ -46,8 +50,48 @@ const Slide: React.FC<SlideProps> = ({ slide, currentIndex, totalSlides, goToNex
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h2 className="text-4xl font-bold mb-6">{slide.title}</h2>
-          <p className="whitespace-pre-line text-lg leading-relaxed">{slide.content}</p>
+          {/* Render title with Markdown, but without code or tables */}
+          <ReactMarkdown className="text-4xl font-bold mb-6">
+            {slide.title}
+          </ReactMarkdown>
+
+          {/* Render content, applying remark and rehype plugins ONLY if content has code blocks or tables */}
+          <ReactMarkdown
+            className="whitespace-pre-line text-lg leading-relaxed"
+            remarkPlugins={[remarkGfm]}  // Enable GitHub Flavored Markdown for tables and lists
+            rehypePlugins={[rehypeHighlight]}  // Syntax highlighting for code blocks
+            components={{
+              code({ className, children, ...props }) {
+                const match = /language-(\w+)/.exec(className || ''); // Detect language for syntax highlighting
+                return match ? (
+                  <pre className={`p-4 my-4 rounded-md bg-gray-100 dark:bg-gray-700`}>
+                    <code className={`${className}`} {...props}>
+                      {children}
+                    </code>
+                  </pre>
+                ) : (
+                  <code className={className} {...props}>
+                    {children}
+                  </code>
+                );
+              },
+              table({ children }) {
+                return (
+                  <table className="table-auto border-collapse border border-gray-400 w-full my-4">
+                    {children}
+                  </table>
+                );
+              },
+              th({ children }) {
+                return <th className="border border-gray-300 px-4 py-2 bg-gray-200">{children}</th>;
+              },
+              td({ children }) {
+                return <td className="border border-gray-300 px-4 py-2">{children}</td>;
+              },
+            }}
+          >
+            {slide.content}
+          </ReactMarkdown>
         </motion.div>
       </Transition>
 
@@ -76,7 +120,9 @@ const Slide: React.FC<SlideProps> = ({ slide, currentIndex, totalSlides, goToNex
         >
           <FontAwesomeIcon icon={faArrowLeft} className="h-6 w-6" />
         </button>
-        <span className="text-lg mx-4">{currentIndex + 1} / {totalSlides}</span>
+        <span className="text-lg mx-4">
+          {currentIndex + 1} / {totalSlides}
+        </span>
         <button
           onClick={goToNext}
           className="p-3 text-blue-500 hover:text-blue-700 transition"
