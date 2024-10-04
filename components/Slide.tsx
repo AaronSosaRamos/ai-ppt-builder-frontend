@@ -6,7 +6,7 @@ import { faClipboard, faCheck, faArrowLeft, faArrowRight } from '@fortawesome/fr
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
-import 'highlight.js/styles/github.css'; // Choose any style you like for syntax highlighting
+import 'highlight.js/styles/github.css'; 
 
 interface SlideProps {
   slide: {
@@ -27,14 +27,14 @@ const Slide: React.FC<SlideProps> = ({ slide, currentIndex, totalSlides, goToNex
       const copyText = `Title: ${slide.title}\n\n${slide.content}`;
       await navigator.clipboard.writeText(copyText);
       setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000); // Reset after 2 seconds
+      setTimeout(() => setIsCopied(false), 2000); 
     } catch (error) {
       console.error('Failed to copy:', error);
     }
   };
 
   return (
-    <div className="relative flex flex-col items-center justify-center p-8 bg-white dark:bg-gray-800 text-black dark:text-white rounded-xl shadow-xl w-full max-w-3xl transition-all">
+    <div className="relative flex flex-col items-center justify-center p-8 bg-white dark:bg-gray-800 text-black dark:text-white rounded-xl shadow-xl w-full max-w-3xl transition-all break-words">
       <Transition
         appear
         show
@@ -50,43 +50,43 @@ const Slide: React.FC<SlideProps> = ({ slide, currentIndex, totalSlides, goToNex
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
-          {/* Render title with Markdown, but without code or tables */}
-          <ReactMarkdown className="text-4xl font-bold mb-6">
+          <ReactMarkdown className="text-3xl md:text-4xl font-bold mb-6 break-words max-w-full">
             {slide.title}
           </ReactMarkdown>
 
-          {/* Render content, applying remark and rehype plugins ONLY if content has code blocks or tables */}
           <ReactMarkdown
-            className="whitespace-pre-line text-lg leading-relaxed"
-            remarkPlugins={[remarkGfm]}  // Enable GitHub Flavored Markdown for tables and lists
-            rehypePlugins={[rehypeHighlight]}  // Syntax highlighting for code blocks
+            className="whitespace-pre-line text-base md:text-lg leading-relaxed break-words max-w-full overflow-x-auto"
+            remarkPlugins={[remarkGfm]}  
+            rehypePlugins={[rehypeHighlight]} 
             components={{
               code({ className, children, ...props }) {
-                const match = /language-(\w+)/.exec(className || ''); // Detect language for syntax highlighting
+                const match = /language-(\w+)/.exec(className || ''); 
                 return match ? (
-                  <pre className={`p-4 my-4 rounded-md bg-gray-100 dark:bg-gray-700`}>
+                  <pre className="p-4 my-4 rounded-md bg-gray-100 dark:bg-gray-700 overflow-x-auto">
                     <code className={`${className}`} {...props}>
                       {children}
                     </code>
                   </pre>
                 ) : (
-                  <code className={className} {...props}>
+                  <code className="break-words max-w-full" {...props}>
                     {children}
                   </code>
                 );
               },
               table({ children }) {
                 return (
-                  <table className="table-auto border-collapse border border-gray-400 w-full my-4">
-                    {children}
-                  </table>
+                  <div className="overflow-x-auto">
+                    <table className="table-auto border-collapse border border-gray-400 w-full my-4">
+                      {children}
+                    </table>
+                  </div>
                 );
               },
               th({ children }) {
-                return <th className="border border-gray-300 px-4 py-2 bg-gray-200">{children}</th>;
+                return <th className="border border-gray-300 px-4 py-2 bg-gray-200 break-words">{children}</th>;
               },
               td({ children }) {
-                return <td className="border border-gray-300 px-4 py-2">{children}</td>;
+                return <td className="border border-gray-300 px-4 py-2 break-words">{children}</td>;
               },
             }}
           >
